@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   09_Data_Aggregation.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Data Harmonization (Aggregation)
 # Purpose:     Aggregate 3-second BirdNET detections into hourly summaries per 
 #              species and deployment to match environmental data resolution.
