@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   14_Statistical_Diagnostics.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Results - Statistical Diagnostics (Model Fitness)
 # Purpose:     Comprehensive diagnostic suite for the modeling dataset, covering
 #              distribution, residuals, non-linearity, and spatial autocorrelation.
