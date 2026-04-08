@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   08_Pre_DataAggregation_Diagnostics.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Results - Distribution Analysis
 # Purpose:     Evaluate the distribution of confidence scores (Mean vs Median) 
 #              and generate diagnostic plots for the internship report.
