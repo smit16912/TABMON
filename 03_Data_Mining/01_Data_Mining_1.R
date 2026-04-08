@@ -5,7 +5,6 @@
 # Purpose:     Explore BirdNET performance patterns including species-specific 
 #              confidence thresholds, diurnal activity profiles (radar plots), 
 #              and acoustic overlap impacts on segment confidence.
-# Author:      Smit Rajshekhar Patel
 # ==============================================================================
 
 # [SECTION] 1. LOAD LIBRARIES --------------------------------------------------
