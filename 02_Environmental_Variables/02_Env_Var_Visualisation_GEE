@@ -7,6 +7,7 @@
  * buffers for quality control and visual inspection.
  *******************************************************************************/
 
+
 /******************** [SECTION] 0. TIME & STATION SETTINGS ********************/
 var tStart = ee.Date('2025-06-15T12:00'); // Mid-month snapshot
 var tEnd   = tStart.advance(1, 'hour');
@@ -127,4 +128,38 @@ var snow = s1.select('VV').lt(-15).multiply(100).unmask(0).clip(bufferMask);
 /******************** [SECTION] 4. LAYER VISUALIZATION ********************/
 
 // CLIMATE LAYERS
-Map.addLayer(T, {min: 5, max: 30, palette: ['blue', 'yellow', 'red']},
+Map.addLayer(T, {min: 5, max: 30, palette: ['blue', 'yellow', 'red']}, 'Temperature (°C)', false);
+Map.addLayer(RH, {min: 20, max: 100, palette: ['white', 'blue']}, 'Relative Humidity (%)', false);
+Map.addLayer(wind, {min: 0, max: 10}, 'Wind Speed', false);
+Map.addLayer(precip, {min: 0, max: 5}, 'Precipitation', false);
+Map.addLayer(pressure, {min: 950, max: 1050}, 'Pressure', false);
+
+// ECOLOGICAL LAYERS
+Map.addLayer(lai, {min: 0, max: 6, palette: ['white', 'green']}, 'LAI', false);
+Map.addLayer(wetness, {min: 0, max: 50}, 'Surface Wetness', false);
+Map.addLayer(snow, {min: 0, max: 100}, 'Snow (SAR Proxy)', false);
+
+// TERRAIN LAYERS
+Map.addLayer(dem, {min: 0, max: 500}, 'DEM', false);
+Map.addLayer(slope, {min: 0, max: 30}, 'Slope', false);
+Map.addLayer(TEI, {min: -50, max: 50, palette: ['red', 'white', 'blue']}, 'TEI', false);
+
+// VEGETATION STRUCTURE
+Map.addLayer(canopyHeight, {min: 0, max: 40}, 'Canopy Height', false);
+Map.addLayer(canopyDensity, {min: 0, max: 5}, 'Canopy Density', false);
+
+// SAR DERIVATIVES
+Map.addLayer(s1.select('VV'), {min: -25, max: 0}, 'SAR VV', false);
+Map.addLayer(s1.select('VH'), {min: -30, max: -5}, 'SAR VH', false);
+Map.addLayer(VV_entropy, {min: 0, max: 5}, 'SAR Entropy', false);
+Map.addLayer(AVI, {min: 0, max: 1, palette: ['black', 'green', 'white']}, 'AVI (Acoustic Impedance)', false);
+
+// LANDSCAPE / ANTHRO
+Map.addLayer(distWater, {min: 0, max: 1000}, 'Distance to Water', false);
+Map.addLayer(nightLights, {min: 0, max: 50}, 'Night Lights', false);
+Map.addLayer(builtUp, {min: 0, max: 1}, 'Built-up Fraction', false);
+
+// STUDY DESIGN
+Map.addLayer(buffer250m, {color: 'red'}, '250m Study Buffers', true);
+
+print('✅ FULL VARIABLE VISUALIZATION READY (CLIPPED TO 250m BUFFERS)');
