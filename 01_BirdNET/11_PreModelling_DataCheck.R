@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   11_PreModelling_DataCheck.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Final Data Validation
 # Purpose:     Verify the suitability of the filtered and aggregated dataset 
 #              for the modelling pipeline (checking bounds, NAs, and cardinality).
