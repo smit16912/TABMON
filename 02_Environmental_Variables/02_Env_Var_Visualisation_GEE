@@ -5,7 +5,6 @@
  * Purpose:     Generate a spatial snapshot of all environmental variables 
  * (Climate, Vegetation, SAR, Anthro) clipped to the 250m study 
  * buffers for quality control and visual inspection.
- * Author:      Smit Rajshekhar Patel
  *******************************************************************************/
 
 /******************** [SECTION] 0. TIME & STATION SETTINGS ********************/
