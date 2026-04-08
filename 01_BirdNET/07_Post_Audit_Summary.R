@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   07_Post_Audit_Summary.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Data Harmonization (Final Structural Audit)
 # Purpose:     Generate a comprehensive metadata and structural summary of the 
 #              processed dataset to confirm readiness for environmental analysis.
