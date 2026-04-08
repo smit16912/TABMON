@@ -5,7 +5,6 @@
 # Purpose:     Join BirdNET aggregated detections with environmental covariates,
 #              standardize 16 variables (z-scores), and generate linear 
 #              regression panels to visualize baseline relationships.
-# Author:      Smit Rajshekhar Patel
 # ==============================================================================
 
 # [SECTION] 1. LOAD LIBRARIES --------------------------------------------------
