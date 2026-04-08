@@ -1,6 +1,6 @@
 1. Internship Research: Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 
-2. Host Institude: Norwegian Institute of Nature Research, Trondheim
+2. Host Institute: Norwegian Institute of Nature Research, Trondheim
 
 3. Author: Smit Rajshekhar Patel: Affiliation: MSc Geoinformation Science and Earth Observation, Faculty ITC, University of Twente 
 
