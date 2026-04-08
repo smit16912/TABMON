@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   01_Data_Merge.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Data Harmonization (Parquet Management)
 # Purpose:     Merge Hive-partitioned raw BirdNET data into a unified Parquet file.
 # ==============================================================================
