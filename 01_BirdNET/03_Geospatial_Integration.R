@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   03_Geospatial_Integration.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Data Harmonization (Spatial Joins)
 # Purpose:     Join BirdNET detections with Bugg deployment metadata to 
 #              attach Latitude, Longitude, and Site information.
