@@ -1,0 +1,131 @@
+/*******************************************************************************
+ * Script ID:   02_Env_Var_Visualisation_GEE
+ * Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
+ * Section:     Visual Validation - Google Earth Engine (GEE)
+ * Purpose:     Generate a spatial snapshot of all environmental variables 
+ * (Climate, Vegetation, SAR, Anthro) clipped to the 250m study 
+ * buffers for quality control and visual inspection.
+ * Author:      Smit Rajshekhar Patel
+ *******************************************************************************/
+
+/******************** [SECTION] 0. TIME & STATION SETTINGS ********************/
+var tStart = ee.Date('2025-06-15T12:00'); // Mid-month snapshot
+var tEnd   = tStart.advance(1, 'hour');
+
+// Load TABMON station assets
+var stations = ee.FeatureCollection(
+  'projects/ee-smit16912/assets/Active_Stations_TABMON'
+);
+
+/******************** [SECTION] 1. SPATIAL BUFFERS & MASKING ********************/
+var buffer250m = stations.map(function(f) {
+  return f.buffer(250);
+});
+
+var buffer1km = stations.map(function(f) {
+  return f.buffer(1000);
+});
+
+var buffer2km = stations.map(function(f) {
+  return f.buffer(2000);
+});
+
+var geom1km = buffer1km.geometry();
+var geom2km = buffer2km.geometry();
+
+// Define the primary study area mask (250m radius around recorders)
+var bufferMask = buffer250m.geometry();
+
+Map.centerObject(stations, 8);
+
+/******************** [SECTION] 2. STATIC VARIABLES (UNCHANGED) ********************/
+
+/* A. TERRAIN (MERIT DEM) */
+var dem = ee.Image('MERIT/DEM/v1_0_3').select('dem').unmask().clip(bufferMask);
+var slope = ee.Terrain.slope(dem).clip(bufferMask);
+var terrain = ee.Terrain.products(dem);
+
+var TEI = terrain.select('slope')
+  .multiply(
+    terrain.select('aspect').multiply(Math.PI).divide(180).cos()
+  )
+  .unmask(0)
+  .clip(bufferMask);
+
+/* B. VEGETATION STRUCTURE (GEDI MONTHLY) */
+var canopyHeight = ee.ImageCollection('LARSE/GEDI/GEDI02_A_002_MONTHLY')
+  .select('rh98').mean()
+  .focalMean({radius: 250, units: 'meters'})
+  .clip(bufferMask);
+
+var canopyDensity = ee.ImageCollection('LARSE/GEDI/GEDI02_B_002_MONTHLY')
+  .select('pai').mean()
+  .focalMean({radius: 250, units: 'meters'})
+  .clip(bufferMask);
+
+/* C. SAR & ACOUSTIC IMPEDANCE (Sentinel-1) */
+var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
+  .filterBounds(buffer250m)
+  .filter(ee.Filter.eq('instrumentMode','IW'))
+  .filter(ee.Filter.eq('orbitProperties_pass','DESCENDING'))
+  .filter(ee.Filter.listContains('transmitterReceiverPolarisation','VV'))
+  .filter(ee.Filter.listContains('transmitterReceiverPolarisation','VH'))
+  .select(['VV','VH']).mean().unmask().clip(bufferMask);
+
+var VV_entropy = s1.select('VV').multiply(10).toInt()
+  .glcmTexture({size: 3}).select('VV_ent').clip(bufferMask);
+
+var VHn = s1.select('VH').unitScale(-30, -5);
+var VVdiff_n = s1.select('VH').subtract(s1.select('VV')).unitScale(-10, 5);
+var Ent_n = VV_entropy.unitScale(0, 5);
+
+var AVI = VHn.multiply(0.4).add(VVdiff_n.multiply(0.4)).add(Ent_n.multiply(0.2))
+  .clip(bufferMask);
+
+/* D. LANDSCAPE & ANTHRO */
+var waterMask = ee.Image('JRC/GSW1_4/GlobalSurfaceWater').select('occurrence').gt(90);
+var distWater = waterMask.not().fastDistanceTransform(1000).sqrt().multiply(30)
+  .clip(bufferMask);
+
+var nightLights = ee.ImageCollection('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG')
+  .select('avg_rad').mean().unmask(0).clip(bufferMask);
+
+var builtUp = ee.ImageCollection('JRC/GHSL/P2023A/GHS_BUILT_S')
+  .select('built_surface').mosaic().divide(ee.Image.pixelArea()).clip(bufferMask);
+
+/******************** [SECTION] 3. DYNAMIC VARIABLES (SINGLE SNAPSHOT) ********************/
+
+/* I. CLIMATE (ERA5 HOURLY) */
+var era5 = ee.ImageCollection('ECMWF/ERA5/HOURLY').filterDate(tStart, tEnd).mean().unmask().clip(bufferMask);
+
+var T = era5.select('temperature_2m').subtract(273.15).clip(bufferMask);
+
+var RH = (function () {
+  var Td = era5.select('dewpoint_temperature_2m').subtract(273.15);
+  var es = T.expression('6.112 * exp((17.67*T)/(T+243.5))', {T:T});
+  var e  = Td.expression('6.112 * exp((17.67*Td)/(Td+243.5))', {Td:Td});
+  return e.divide(es).multiply(100);
+})().clip(bufferMask);
+
+var wind = era5.select('u_component_of_wind_10m').pow(2)
+  .add(era5.select('v_component_of_wind_10m').pow(2)).sqrt().clip(bufferMask);
+
+var precip = era5.select('total_precipitation').multiply(1000).clip(bufferMask);
+var pressure = era5.select('surface_pressure').divide(100).clip(bufferMask);
+
+/* II. VEGETATION PHENOLOGY (MODIS LAI) */
+var lai = ee.ImageCollection('MODIS/061/MCD15A3H').select('Lai')
+  .filterDate(tStart.advance(-15,'day'), tStart.advance(15,'day')).mean()
+  .focalMean({radius:250, units:'meters'}).unmask(0).clip(bufferMask);
+
+/* III. DYNAMIC ECOLOGY (WETNESS & SNOW) */
+var wetness = ee.ImageCollection('ECMWF/ERA5/HOURLY')
+  .filterDate(tStart.advance(-3,'day'), tStart.advance(1,'day'))
+  .select('total_precipitation').sum().multiply(1000).unmask(0).clip(bufferMask);
+
+var snow = s1.select('VV').lt(-15).multiply(100).unmask(0).clip(bufferMask);
+
+/******************** [SECTION] 4. LAYER VISUALIZATION ********************/
+
+// CLIMATE LAYERS
+Map.addLayer(T, {min: 5, max: 30, palette: ['blue', 'yellow', 'red']},
