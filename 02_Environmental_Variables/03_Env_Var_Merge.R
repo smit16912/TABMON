@@ -6,7 +6,6 @@
 #              longitudinal Parquet dataset. Standardizes data types (Date, 
 #              HourUTC, DplymID) to ensure relational integrity for the 
 #              final Master Join.
-# Author:      Smit Rajshekhar Patel
 # ==============================================================================
 
 # [SECTION] 1. LOAD LIBRARIES --------------------------------------------------
