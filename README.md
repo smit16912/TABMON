@@ -2,7 +2,7 @@
 
 2. Host Institute: Norwegian Institute of Nature Research, Trondheim
 
-3. Author: Smit Rajshekhar Patel: Affiliation: MSc Geoinformation Science and Earth Observation, Faculty ITC, University of Twente 
+3. Author: Smit Rajshekhar Patel, MSc Geoinformation Science and Earth Observation, Faculty ITC, University of Twente 
 
 4. Project Overview
     This repository contains the complete analytical pipeline for my internship work at the Norwegian Institute for Nature Research (NINA). The project integrates      acoustic monitoring data (TABMON) with multi-source environmental variables to analyze the factors influencing BirdNET detection confidence.
