@@ -1,0 +1,134 @@
+/*******************************************************************************
+ * Script ID:   01_Env_Var_Extraction_GEE
+ * Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
+ * Section:     Data Extraction - Google Earth Engine (GEE)
+ * Purpose:     Extract high-resolution hourly climate (ERA5), vegetation (GEDI/MODIS), 
+ * and anthropogenic (GHSL/VIIRS) data for TABMON stations.
+ * Uses a 250m buffer to match ecological relevance.
+ * Author:      Smit Rajshekhar Patel
+ *******************************************************************************/
+
+/******************** [SECTION] 0. TIME & STATION SETTINGS ********************/
+var startDate = ee.Date('2025-06-01T00:00');
+var endDate   = startDate.advance(1, 'month');
+
+// Load TABMON station assets
+var stations = ee.FeatureCollection(
+  'projects/ee-smit16912/assets/Active_Stations_TABMON'
+);
+
+/******************** [SECTION] 1. SPATIAL BUFFERS ********************/
+// Primary analysis buffer (250m) for fine-scale ecological variables
+var buffer250m = stations.map(function(f) {
+  return f.buffer(250).copyProperties(f);
+});
+
+// Ancillary buffers (1km & 2km) for landscape/anthro variables
+var buffer1km = stations.map(function(f) {
+  return f.buffer(1000).copyProperties(f);
+});
+
+var buffer2km = stations.map(function(f) {
+  return f.buffer(2000).copyProperties(f);
+});
+
+var geom1km = buffer1km.geometry();
+var geom2km = buffer2km.geometry();
+
+/******************** [SECTION] 2. STATIC ENVIRONMENTAL VARIABLES ********************/
+
+/* A. TERRAIN (MERIT DEM) */
+var dem = ee.Image('MERIT/DEM/v1_0_3').select('dem').unmask();
+var slope = ee.Terrain.slope(dem);
+var terrain = ee.Terrain.products(dem);
+
+// Calculate Topographic Exposure Index (TEI)
+var TEI = terrain.select('slope')
+  .multiply(
+    terrain.select('aspect').multiply(Math.PI).divide(180).cos()
+  )
+  .unmask(0)
+  .rename('TER301_TopographicExposureIndex');
+
+/* B. VEGETATION STRUCTURE (GEDI MONTHLY) */
+var canopyHeight = ee.ImageCollection('LARSE/GEDI/GEDI02_A_002_MONTHLY')
+  .select('rh98').mean()
+  .focalMean({radius: 250, units: 'meters'})
+  .rename('VEG101_CanopyHeight_m');
+
+var canopyDensity = ee.ImageCollection('LARSE/GEDI/GEDI02_B_002_MONTHLY')
+  .select('pai').mean()
+  .focalMean({radius: 250, units: 'meters'})
+  .rename('VEG102_CanopyDensity_PAI');
+
+/* C. SAR & ACOUSTIC IMPEDANCE (Sentinel-1) */
+var s1 = ee.ImageCollection('COPERNICUS/S1_GRD')
+  .filterBounds(buffer250m)
+  .filter(ee.Filter.eq('instrumentMode','IW'))
+  .filter(ee.Filter.eq('orbitProperties_pass','DESCENDING'))
+  .filter(ee.Filter.listContains('transmitterReceiverPolarisation','VV'))
+  .filter(ee.Filter.listContains('transmitterReceiverPolarisation','VH'))
+  .select(['VV','VH']).mean().unmask();
+
+var VV_entropy = s1.select('VV').multiply(10).toInt()
+  .glcmTexture({size: 3}).select('VV_ent')
+  .rename('VEG104_SAR_GLCM_Entropy');
+
+// Calculate AVI (Acoustic Vegetation Impedance)
+var VHn = s1.select('VH').unitScale(-30, -5);
+var VVdiff_n = s1.select('VH').subtract(s1.select('VV')).unitScale(-10, 5);
+var Ent_n = VV_entropy.unitScale(0, 5);
+
+var AVI = VHn.multiply(0.4).add(VVdiff_n.multiply(0.4)).add(Ent_n.multiply(0.2))
+  .rename('VEG201_AcousticVegetationImpedance');
+
+/* D. LANDSCAPE & ANTHRO */
+var waterMask = ee.Image('JRC/GSW1_4/GlobalSurfaceWater').select('occurrence').gt(90);
+var distWater = waterMask.not().fastDistanceTransform(1000).sqrt().multiply(30)
+  .rename('GEO101_DistToWater_m').clip(geom1km);
+
+var nightLights = ee.ImageCollection('NOAA/VIIRS/DNB/MONTHLY_V1/VCMSLCFG')
+  .select('avg_rad').mean().unmask(0)
+  .rename('ANTH102_NightLights').clip(geom2km);
+
+var builtUp = ee.ImageCollection('JRC/GHSL/P2023A/GHS_BUILT_S')
+  .select('built_surface').mosaic()
+  .divide(ee.Image.pixelArea())
+  .rename('ANTH101_BuiltUpFrac').clip(geom2km);
+
+/******************** [SECTION] 3. TEMPORAL PROCESSING LOOP (HOURLY) ********************/
+var hours = ee.List.sequence(0, endDate.difference(startDate, 'hour').subtract(1));
+
+var hourlyCollection = ee.FeatureCollection(
+  hours.map(function(h) {
+    var tStart = startDate.advance(h, 'hour');
+    var tEnd   = tStart.advance(1, 'hour');
+
+    /* I. CLIMATE (ERA5 HOURLY) */
+    var era5 = ee.ImageCollection('ECMWF/ERA5/HOURLY').filterDate(tStart, tEnd).mean().unmask();
+    var T = era5.select('temperature_2m').subtract(273.15);
+    var CLIM_T = T.rename('CLIM_T_C');
+
+    // Relative Humidity calculation
+    var CLIM_RH = (function () {
+      var Td = era5.select('dewpoint_temperature_2m').subtract(273.15);
+      var es = T.expression('6.112 * exp((17.67*T)/(T+243.5))', {T:T});
+      var e  = Td.expression('6.112 * exp((17.67*Td)/(Td+243.5))', {Td:Td});
+      return e.divide(es).multiply(100).rename('CLIM_RH_pct');
+    })();
+
+    var CLIM_Wind = era5.select('u_component_of_wind_10m').pow(2)
+      .add(era5.select('v_component_of_wind_10m').pow(2)).sqrt()
+      .rename('CLIM_WindSpeed_m_s');
+
+    var CLIM_Precip = era5.select('total_precipitation').multiply(1000).rename('CLIM_Precip_mm_hr');
+    var CLIM_Pressure = era5.select('surface_pressure').divide(100).rename('CLIM_SurfacePressure_hPa');
+
+    /* II. VEGETATION PHENOLOGY (MODIS LAI) */
+    var lai = ee.ImageCollection('MODIS/061/MCD15A3H').select('Lai')
+      .filterDate(tStart.advance(-15,'day'), tStart.advance(15,'day')).mean()
+      .focalMean({radius:250, units:'meters'}).unmask(0)
+      .rename('ECO101_LAI');
+
+    /* III. DYNAMIC ECOLOGY (WETNESS & SNOW) */
+    var wetness
