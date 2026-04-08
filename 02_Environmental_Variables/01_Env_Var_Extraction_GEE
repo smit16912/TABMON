@@ -5,7 +5,6 @@
  * Purpose:     Extract high-resolution hourly climate (ERA5), vegetation (GEDI/MODIS), 
  * and anthropogenic (GHSL/VIIRS) data for TABMON stations.
  * Uses a 250m buffer to match ecological relevance.
- * Author:      Smit Rajshekhar Patel
  *******************************************************************************/
 
 /******************** [SECTION] 0. TIME & STATION SETTINGS ********************/
