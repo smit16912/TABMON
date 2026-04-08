@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   06_Audit_Implementation.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Data Harmonization (Final Cleaning)
 # Purpose:     Execute removal of missing values, out-of-bounds records, and 
 #              duplicates based on findings from the diagnostic audit.
