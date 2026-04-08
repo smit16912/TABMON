@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   05_Structural_Audits.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Data Harmonization (Quality Control)
 # Purpose:     Identify missing values, logical insanities (bounds), and 
 #              duplicates to ensure dataset integrity before modeling.
