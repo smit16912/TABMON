@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   12_PreModelling_Data_Summary.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Final Data Validation (Post-Filtering)
 # Purpose:     Validate the final modeling dataset after enforcing n_detections > 1.
 #              This is the final data quality check before running the Progressive 
