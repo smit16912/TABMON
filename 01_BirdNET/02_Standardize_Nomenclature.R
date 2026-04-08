@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   02_Standardize_Nomenclature.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Data Harmonization (Column Cleaning)
 # Purpose:     Clean and standardize column names (lowercase, no spaces) for 
 #              modeling consistency.
