@@ -7,6 +7,7 @@
  * Uses a 250m buffer to match ecological relevance.
  *******************************************************************************/
 
+
 /******************** [SECTION] 0. TIME & STATION SETTINGS ********************/
 var startDate = ee.Date('2025-06-01T00:00');
 var endDate   = startDate.advance(1, 'month');
@@ -130,4 +131,41 @@ var hourlyCollection = ee.FeatureCollection(
       .rename('ECO101_LAI');
 
     /* III. DYNAMIC ECOLOGY (WETNESS & SNOW) */
-    var wetness
+    var wetness = ee.ImageCollection('ECMWF/ERA5/HOURLY')
+      .filterDate(tStart.advance(-3,'day'), tStart.advance(1,'day'))
+      .select('total_precipitation').sum().multiply(1000).unmask(0)
+      .rename('ECO202_SurfaceWetness_mm');
+
+    var snow = s1.select('VV').lt(-15).multiply(100).unmask(0).rename('ECO203_Snow_SAR');
+
+    /* IV. STACK & REDUCE */
+    var stack = ee.Image.cat([
+      CLIM_T, CLIM_RH, CLIM_Wind, CLIM_Precip, CLIM_Pressure,
+      lai, wetness, snow, dem, slope, TEI,
+      canopyHeight, canopyDensity, s1, VV_entropy, AVI,
+      distWater, nightLights, builtUp
+    ]);
+
+    return stack.reduceRegions({
+      collection: buffer250m,
+      reducer: ee.Reducer.mean(),
+      scale: 250,
+      tileScale: 4
+    }).map(function(f){
+      return f.set({
+        Date: tStart.format('YYYY-MM-dd'),
+        HourUTC: tStart.get('hour')
+      });
+    });
+  })
+).flatten();
+
+/******************** [SECTION] 4. EXPORT SYSTEM ********************/
+Export.table.toDrive({
+  collection: hourlyCollection,
+  description: 'TABMON_FINAL_ECOLOGICALLY_CORRECT_250m',
+  folder: 'Acoustic_Environment',
+  fileFormat: 'CSV'
+});
+
+print('✅ FINAL SCRIPT — STANDARDIZED & ECOLOGICALLY CORRECT');
