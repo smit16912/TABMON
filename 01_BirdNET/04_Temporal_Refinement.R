@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   04_Temporal_Refinement.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Data Harmonization (Temporal Engine)
 # Purpose:     Convert Zulu/UTC timestamps to Local Time based on geographic 
 #              coordinates to allow for diel (hourly) analysis.
