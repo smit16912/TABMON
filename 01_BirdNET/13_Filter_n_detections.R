@@ -1,6 +1,6 @@
 # ==============================================================================
 # Script ID:   13_Filter_n_detections.R
-# Project:     Quantifying Environmental Variables & BirdNET Confidence
+# Project:     Quantifying the Relationship Between Environmental Variables and BirdNET Classification Confidence Using Earth Observation Data and GIS
 # Section:     Methodology - Data Harmonization (Reliability Filtering)
 # Purpose:     Filter the dataset to include only records with more than one 
 #              detection (n > 1) per hour to ensure statistical stability.
